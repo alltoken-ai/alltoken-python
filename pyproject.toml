@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "alltoken-ai"
-version = "0.1.0"
+name = "alltoken"
+version = "0.2.0"
 description = "Official Python SDK for AllToken — one API for OpenAI, Anthropic, and 100+ models."
 readme = "README.md"
 license = { text = "MIT" }
