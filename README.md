@@ -1,9 +1,9 @@
-# alltoken-ai
+# alltoken
 
 Official Python SDK for [AllToken](https://alltoken.ai) — one API for OpenAI, Anthropic, and 100+ models.
 
 ```bash
-pip install alltoken-ai
+pip install alltoken
 ```
 
 Requires **Python 3.10+**.
