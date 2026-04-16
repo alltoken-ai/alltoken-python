@@ -18,7 +18,7 @@ jobs:
       - name: Build main package (alltoken)
         run: python -m build
       - name: Publish alltoken to PyPI
-        run: twine upload dist/*
+        run: twine upload --skip-existing dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
@@ -27,7 +27,7 @@ jobs:
           rm -rf dist/
           python -m build alias/
       - name: Publish alltoken-ai to PyPI
-        run: twine upload dist/*
+        run: twine upload --skip-existing dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
