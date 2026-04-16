@@ -15,7 +15,10 @@ from __future__ import annotations
 
 from ._anthropic import AnthropicClient
 from ._client import AllTokenConfig
+from ._error import AllTokenError
 from ._openai import OpenAIClient
+from ._streaming import AllTokenStream
+from ._types import ChatCompletion, ChatCompletionChunk, ChatCompletionMessage
 
 __version__ = "0.1.0"
 
@@ -46,4 +49,15 @@ class AllToken:
         self.anthropic = AnthropicClient(config)
 
 
-__all__ = ["AllToken", "AllTokenConfig", "AnthropicClient", "OpenAIClient", "__version__"]
+__all__ = [
+    "AllToken",
+    "AllTokenConfig",
+    "AllTokenError",
+    "AllTokenStream",
+    "AnthropicClient",
+    "ChatCompletion",
+    "ChatCompletionChunk",
+    "ChatCompletionMessage",
+    "OpenAIClient",
+    "__version__",
+]

@@ -7,6 +7,7 @@ from __future__ import annotations
 import httpx
 
 from ._client import AllTokenConfig, build_headers, join_base_url
+from ._resources.chat import Chat
 
 _OPENAI_PATH = "/v1"
 
@@ -23,6 +24,7 @@ class OpenAIClient:
     """
 
     raw: httpx.Client
+    chat: Chat
 
     def __init__(self, config: AllTokenConfig) -> None:
         self.raw = httpx.Client(
@@ -30,6 +32,7 @@ class OpenAIClient:
             headers=build_headers(config),
             timeout=httpx.Timeout(60.0, connect=10.0),
         )
+        self.chat = Chat(self.raw)
 
     def close(self) -> None:
         """Close the underlying HTTP connection pool."""
