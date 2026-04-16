@@ -3,17 +3,22 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterator
-from typing import Generic, TypeVar
+from typing import Any, Generic, Protocol, TypeVar
 
 import httpx
 
 T = TypeVar("T")
 
 
+class _FromDict(Protocol):
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Any: ...
+
+
 class AllTokenStream(Generic[T]):
     """Wraps an httpx streaming response, parses SSE lines into typed objects."""
 
-    def __init__(self, response: httpx.Response, parser: type) -> None:
+    def __init__(self, response: httpx.Response, parser: _FromDict) -> None:
         self._response = response
         self._parser = parser
 
