@@ -16,3 +16,6 @@ dependencies = ["alltoken>=0.2.0"]
 [project.urls]
 Homepage = "https://alltoken.ai"
 Repository = "https://github.com/alltoken-ai/alltoken-python"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/alltoken_ai"]
