@@ -25,7 +25,7 @@ jobs:
       - name: Build alias package (alltoken-ai)
         run: |
           rm -rf dist/
-          python -m build alias/
+          python -m build alias/ --outdir dist/
       - name: Publish alltoken-ai to PyPI
         run: twine upload --skip-existing dist/*
         env:
