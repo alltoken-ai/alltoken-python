@@ -1,0 +1,89 @@
+name: Auto Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'chore/sync-spec')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: pip install build twine
+
+      - name: Bump version
+        run: |
+          python3 -c "
+          import re, pathlib
+          for toml in ['pyproject.toml', 'alias/pyproject.toml']:
+              p = pathlib.Path(toml)
+              text = p.read_text()
+              m = re.search(r'version = \"(\d+\.\d+\.\d+)\"', text)
+              parts = m.group(1).split('.')
+              parts[-1] = str(int(parts[-1]) + 1)
+              new_ver = '.'.join(parts)
+              p.write_text(text.replace(m.group(0), f'version = \"{new_ver}\"', 1))
+              print(f'{toml}: {m.group(1)} -> {new_ver}')
+          print(new_ver)
+          " | tail -1 > /tmp/new_version
+          VERSION=$(cat /tmp/new_version)
+          echo "RELEASED_VERSION=${VERSION}" >> "$GITHUB_ENV"
+
+      - name: Build and publish alltoken
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          python -m build
+          twine upload --skip-existing dist/*
+
+      - name: Build and publish alltoken-ai alias
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          rm -rf dist/
+          python -m build alias/ --outdir dist/
+          twine upload --skip-existing dist/*
+
+      - name: Commit and tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pyproject.toml alias/pyproject.toml
+          git commit -m "chore: release v${RELEASED_VERSION} [skip ci]"
+          git tag "v${RELEASED_VERSION}"
+          git push origin main --follow-tags
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${RELEASED_VERSION}" \
+            --title "v${RELEASED_VERSION}" \
+            --notes "Auto-release from OpenAPI spec sync. Published to PyPI as alltoken==${RELEASED_VERSION}."
+
+      - name: Notify Feishu
+        if: always()
+        run: |
+          [ -z "${{ secrets.ALERT_WEBHOOK }}" ] && exit 0
+          if [ "${{ job.status }}" = "success" ]; then
+            MSG="alltoken-python v${RELEASED_VERSION} published to PyPI"
+          else
+            MSG="alltoken-python auto-release failed. Check: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
+          curl -s -X POST "${{ secrets.ALERT_WEBHOOK }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"msg_type\":\"text\",\"content\":{\"text\":\"${MSG}\"}}"
