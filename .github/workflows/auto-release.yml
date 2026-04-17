@@ -66,7 +66,8 @@ jobs:
           git add pyproject.toml alias/pyproject.toml
           git commit -m "chore: release v${RELEASED_VERSION} [skip ci]"
           git tag "v${RELEASED_VERSION}"
-          git push origin main --follow-tags
+          git push origin main
+          git push origin "v${RELEASED_VERSION}"
 
       - name: Create GitHub Release
         env:
