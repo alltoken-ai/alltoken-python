@@ -1,0 +1,52 @@
+name: Sync OpenAPI Spec
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Every Monday 02:00 UTC
+  workflow_dispatch:       # Manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Clone megaopenrouter
+        run: |
+          git clone --depth 1 https://x-access-token:${{ secrets.GITLAB_TOKEN }}@gitlab.53site.com/ai-innovation-lab/megaopenrouter.git ../megaopenrouter
+
+      - run: pip install -e ".[dev]"
+
+      - name: Run codegen
+        run: python scripts/generate.py
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet src/alltoken/generated/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create PR
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="chore/sync-spec-$(date +%Y%m%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add src/alltoken/generated/
+          git commit -m "chore: sync generated models from latest OpenAPI spec"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "chore: sync OpenAPI spec models ($(date +%Y-%m-%d))" \
+            --body "Auto-generated from latest megaopenrouter OpenAPI spec." \
+            --base main
