@@ -50,6 +50,10 @@ include = ["src/alltoken", "README.md", "LICENSE"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+# 自动生成代码不参与 lint —— spec 里的中文 description 原样塞进 docstring 会超过
+# line-length，但这是 codegen 输出，不应该被人类规则约束（业界标准做法）。
+# 若要重新启用，先在 scripts/generate.py 里给 ruff 加 # noqa 或截断 description。
+extend-exclude = ["src/alltoken/generated"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM"]
