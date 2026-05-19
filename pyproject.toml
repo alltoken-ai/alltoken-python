@@ -62,3 +62,13 @@ select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM"]
 python_version = "3.10"
 strict = true
 files = ["src/alltoken"]
+# 自动生成代码不参与 strict 类型检查 —— datamodel-code-generator 把 enum 默认值
+# 输出成 raw string（如 size: Size | None = "1024x1024"），strict 模式判 incompatible types。
+# 这是 codegen 模板问题，跟我们 spec 无关；fix 应该在生成器侧，但本仓不维护生成器。
+# 跟 ruff 一致跳过 generated。
+exclude = ["^src/alltoken/generated/"]
+
+# 防止主 module import generated 时 mypy follow 进去做严格检查
+[[tool.mypy.overrides]]
+module = "alltoken.generated.*"
+ignore_errors = true
