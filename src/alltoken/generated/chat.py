@@ -1043,11 +1043,45 @@ class ImageEditUploadIDRequest(BaseModel):
     user: str | None = None
 
 
+class ImageEditUploadIDRequest(BaseModel):
+    model: Annotated[str, Field(examples=["gpt-image-2"])]
+    image_upload_id: str
+    """
+    `POST /uploads/presign` 以 `purpose=image_edit_source` 返回的 upload_id。
+    """
+    prompt: Annotated[str, Field(max_length=32000)]
+    """
+    编辑提示词，必填。
+    """
+    mask_upload_id: str | None = None
+    """
+    可选 mask；必须来自 `purpose=image_edit_mask` 的 upload_id。
+    """
+    n: Annotated[int | None, Field(ge=1, le=10)] = 1
+    size: Annotated[str | None, Field(examples=["1024x1024"])] = "auto"
+    quality: Quality | None = "auto"
+    output_format: OutputFormat | None = "png"
+    output_compression: Annotated[int | None, Field(ge=0, le=100)] = None
+    background: Background | None = "auto"
+    moderation: Moderation | None = "auto"
+    user: str | None = None
+
+
 class Size(Enum):
     auto = "auto"
     field_1024x1024 = "1024x1024"
     field_1536x1024 = "1536x1024"
     field_1024x1536 = "1024x1536"
+
+
+class ImageVariationUploadIDRequest(BaseModel):
+    model: Annotated[str, Field(examples=["dall-e-2"])]
+    image_upload_id: str
+    """
+    `POST /uploads/presign` 以 `purpose=image_variation_source` 返回的 upload_id。
+    """
+    size: Size | None = "auto"
+    user: str | None = None
 
 
 class ImageVariationUploadIDRequest(BaseModel):
